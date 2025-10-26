@@ -6,13 +6,21 @@ RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoload
 
 # Final image
 FROM php:8.2-fpm
+COPY ./.php/conf.d/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 
 RUN apt-get update && apt-get install -y \
     nginx \
-    python3 \
-    python3-pip \
+    python3.13-venv \
     supervisor \
     && rm -rf /var/lib/apt/lists/*
+
+# Create and use a venv
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install your deps into that venv
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Install Xdebug
 RUN pecl install xdebug \

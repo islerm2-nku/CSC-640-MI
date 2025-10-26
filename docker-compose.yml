@@ -3,7 +3,8 @@ services:
     build: .
     ports:
       - "80:80"
-      - "9004:9004" # Xdebug default port
+      - "9004:9004" # Php Xdebug port
+      - "5678:5678" # Python debugger port
     volumes:
       - ./app:/var/www/html/app:rw
       - ./scripts:/app/scripts:ro
