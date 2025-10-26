@@ -1,5 +1,4 @@
-# ...existing code...
-from irsdk import IBT # name will differ by package
+from irsdk import IBT 
 from itertools import groupby
 
 ibt = IBT()
@@ -14,7 +13,6 @@ def ranges_groupby(a):
         for value, group in groupby(enumerate(a), key=lambda iv: iv[1])
         for indices in [[i for i, _ in group]]
     ]
-# ...existing code...
 
 def ranges_groupby_with_offset(a, offset=0):
     """
