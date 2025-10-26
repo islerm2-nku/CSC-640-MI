@@ -1,0 +1,60 @@
+services:
+  web:
+    build: .
+    ports:
+      - "80:80"
+      - "9004:9004" # Xdebug default port
+    volumes:
+      - ./app:/var/www/html/app:rw
+      - ./scripts:/app/scripts:ro
+    environment:
+      DB_DRIVER: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: app
+      DB_USER: appuser
+      DB_PASSWORD: apppass
+      PHP_IDE_CONFIG: "serverName=docker"  # Add this line
+      XDEBUG_CONFIG: "client_host=host.docker.internal"  # Add this line
+    depends_on:
+      db:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: app
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppass
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  migrate:
+    build: .
+    volumes:
+      - ./db:/var/www/html/db:rw
+    environment:
+      DB_DRIVER: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: app
+      DB_USER: appuser
+      DB_PASSWORD: apppass
+    depends_on:
+      - db
+    entrypoint: ["php", "/var/www/html/db/create_db.php"]
+    restart: "no"
+
+volumes:
+  dbdata:

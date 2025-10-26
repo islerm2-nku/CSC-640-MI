@@ -1,0 +1,15 @@
+# VS Code
+.vscode/
+
+# Logs
+*.log
+**/supervisord.log
+
+# Process IDs
+*.pid
+**/supervisord.pid
+
+# Environment files
+.env
+.env.*
+*.env
