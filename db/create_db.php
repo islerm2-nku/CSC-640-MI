@@ -46,5 +46,16 @@ CREATE TABLE IF NOT EXISTS driver (
   FOREIGN KEY (session_id) REFERENCES session_info(session_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 ");
+// Create attribute_values table
+$pdo->exec("
+CREATE TABLE IF NOT EXISTS attribute_values (
+  session_id VARCHAR(36) NOT NULL,
+  attribute VARCHAR(255) NOT NULL,
+  value MEDIUMTEXT,
+  value_len INT UNSIGNED NOT NULL,
+  PRIMARY KEY (session_id, attribute),
+  FOREIGN KEY (session_id) REFERENCES session_info(session_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+");
 
 echo "Migration complete: session_info, weather, and driver tables created successfully\n";

@@ -14,12 +14,12 @@ from add_telemetry import add_telemetry
 debugpy.listen(("0.0.0.0", 5678))
 debugpy.wait_for_client()  # Pause execution until debugger attaches
 
-def parse_telemetry(file_path):
+def parse_telemetry(file_path, attributes):
     try:
         # Initialize irsdk with the .ibt file
         ir = IBT()
         ir.open(ibt_file=file_path)
-        telemetry_data = to_json(ir)
+        telemetry_data = to_json(ir, attributes)
         upserted_data = add_telemetry(telemetry_data)
         ir.close()
         return {"uploaded": True, "session_id": upserted_data["session_info"]["session_id"]}
@@ -28,7 +28,7 @@ def parse_telemetry(file_path):
             "error": str(e)
         })
 
-def to_json(self):
+def to_json(self, attributes):
     """Convert all telemetry data to a JSON-serializable dictionary."""
     if not self._header:
         return None
@@ -40,10 +40,8 @@ def to_json(self):
     }
     
     # Add all variables for all records
-    '''
-    for var_name in self.var_headers_names:
+    for var_name in attributes:
         result['telemetry'][var_name] = self.get_all(var_name)
-    '''
     return result
 
 def get_all_session_info(self):
@@ -95,9 +93,12 @@ def get_session_info_binary(ibt, key):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print(json.dumps({"error": "File path argument required"}))
         sys.exit(1)
     
-    result = parse_telemetry(sys.argv[1])
+    # Get attributes from second argument, default to empty list
+    attributes = json.loads(sys.argv[2]) if len(sys.argv) > 2 else []
+    
+    result = parse_telemetry(sys.argv[1], attributes)
     print(json.dumps(result))

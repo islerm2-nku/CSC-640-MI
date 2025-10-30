@@ -19,6 +19,7 @@ def add_telemetry(telemetry_json):
     session_info = get_session_info(session_id, telemetry_json)
     weather_info = get_weather_info(session_id, telemetry_json)
     driver_info = get_driver_info(session_id, telemetry_json)
+    attribute_data = get_attribute_data(session_id, telemetry_json.get("telemetry", {}))
 
     # Insert data into database
     conn = get_db_connection()
@@ -53,6 +54,20 @@ def add_telemetry(telemetry_json):
             VALUES (%(session_id)s, %(driver_user_id)s, %(driver_name)s, %(car_number)s, 
                     %(car_name)s, %(car_class_id)s, %(driver_rating)s)
         """, driver_info)
+
+         # Insert attribute values (multiple records)
+        if attribute_data:
+            insert_sql = """
+                INSERT INTO attribute_values (session_id, attribute, value, value_len)
+                VALUES (%s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE value = VALUES(value), value_len = VALUES(value_len)
+            """
+            rows = [
+                (rec["session_id"], rec["attribute_name"], rec["value"], rec["value_len"])
+                for rec in attribute_data
+            ]
+            cursor.executemany(insert_sql, rows)
+        
         
         conn.commit()
         
@@ -100,3 +115,13 @@ def get_driver_info(session_id, telemetry_json):
         "car_class_id": telemetry_json["session_info"]["DriverInfo"]["Drivers"][0]["CarClassID"],
         "driver_rating": telemetry_json["session_info"]["DriverInfo"]["Drivers"][0]["IRating"],
     }
+def get_attribute_data(session_id, telemetry_data):
+    records = []
+    for attribute, values in telemetry_data.items():
+        records.append({
+            "session_id": session_id,
+            "attribute_name": attribute,
+            "value": json.dumps(values),
+            "value_len": len(values)
+        })
+    return records

@@ -16,3 +16,6 @@
 
 # telemetry files
 telemetry/
+
+.DS_Store
+__pycache__/

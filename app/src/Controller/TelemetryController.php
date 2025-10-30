@@ -25,10 +25,16 @@ class TelemetryController extends BaseController
         }
 
         try {
+            // Get attributes from POST data, default to empty array
+            $attributes = isset($_POST['attributes']) && is_array($_POST['attributes']) 
+                ? $_POST['attributes'] 
+                : [];
+            
             // Call Python script to parse telemetry
             // PHP's temporary file is already created at $file['tmp_name']
             $pythonScript = '/app/scripts/telemetry_parser.py';
-            $command = "python3 {$pythonScript} " . escapeshellarg($file['tmp_name']);
+            $attributesJson = json_encode($attributes);
+            $command = "python3 {$pythonScript} " . escapeshellarg($file['tmp_name']) . " " . escapeshellarg($attributesJson);
             $output = shell_exec($command);
 
             if ($output === null) {
