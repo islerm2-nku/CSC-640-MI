@@ -21,4 +21,9 @@ class BaseController
             throw new \Exception(json_encode($errors), 422);
         }
     }
+    protected function jsonResponse($data, $statusCode = 200)
+    {
+        http_response_code($statusCode);
+        return $data;
+    }
 }

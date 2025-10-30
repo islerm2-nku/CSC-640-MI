@@ -5,5 +5,7 @@
       "App\\": "app/src/"
     }
   },
-  "require": {}
+  "require": {
+        "nikic/fast-route": "^1.3"
+  }
 }
